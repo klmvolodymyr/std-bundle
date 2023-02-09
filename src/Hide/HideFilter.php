@@ -5,38 +5,28 @@ namespace VolodymyrKlymniuk\StdBundle\Hide;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Filter\BsonFilter;
+//use VolodymyrKlymniuk\Doctrine\Odm\Document\Interfaces\HideableInterface;
 
-trait HideFilter
+class HideFilter extends BsonFilter
 {
     /**
-     * @var DocumentManager
+     * @var string[]
      */
-    private $dm;
+    private $ids = [];
 
     /**
-     * @required
-     *
-     * @param DocumentManager $dm
-     *
-     * @return static
+     * @var string[]
      */
-    public function setDm(DocumentManager $dm): self
-    {
-        $this->dm = $dm;
-
-        return $this;
-    }
+    private $applyFor = [];
 
     /**
      * @param string $id
      *
      * @return static
      */
-    public function hideFor(string $id): self
+    public function addHideFor(string $id): self
     {
-        $this
-            ->getFilter()
-            ->addHideFor($id);
+        $this->ids[] = $id;
 
         return $this;
     }
@@ -46,23 +36,46 @@ trait HideFilter
      *
      * @return static
      */
-    public function applyFor(string $applyFor): self
+    public function addApplyFor(string $applyFor): self
     {
-        $this
-            ->getFilter()
-            ->addApplyFor($applyFor);
+        $this->applyFor[] = $applyFor;
 
         return $this;
     }
 
     /**
-     * @return HideFilter|BsonFilter
+     * @inheritdoc
      */
-    private function getFilter(): HideFilter
+    public function addFilterCriteria(ClassMetadata $class)
     {
-        $filters = $this->dm->getFilterCollection();
-        $filters->enable('hideable');
+        if (!$class->reflClass->implementsInterface(HideableInterface::class)) {
+            return [];
+        }
+        if (!$this->isApplyForClass($class)) {
+            return [];
+        }
 
-        return $filters->getFilter('hideable');
+        return [
+            'hideFor' => ['$nin' => $this->ids],
+        ];
+    }
+
+    /**
+     * @param ClassMetadata $class
+     *
+     * @return bool
+     */
+    private function isApplyForClass(ClassMetadata $class): bool
+    {
+        if (empty($this->applyFor)) {
+            return true;
+        }
+        foreach ($this->applyFor as $applyFor) {
+            if ($class->name === $applyFor || $class->reflClass->isSubclassOf($applyFor)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
