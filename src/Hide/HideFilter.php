@@ -5,7 +5,7 @@ namespace VolodymyrKlymniuk\StdBundle\Hide;
 
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ODM\MongoDB\Query\Filter\BsonFilter;
-//use VolodymyrKlymniuk\Doctrine\Odm\Document\Interfaces\HideableInterface;
+use VolodymyrKlymniuk\Doctrine\Odm\Document\Interfaces\HideableInterface;
 
 class HideFilter extends BsonFilter
 {

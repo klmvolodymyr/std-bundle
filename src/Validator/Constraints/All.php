@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace VolodymyrKlymniuk\StdBundle\Validator\Constraints;
 
+use Symfony\Component\Validator\Constraints\Composite;
+
 /**
  * @Annotation
  * @Target({"PROPERTY", "METHOD", "ANNOTATION"})
